@@ -193,8 +193,11 @@ def stats():
     
     # Only show active albums in stats
     active_albums = [a for a in albums if not a.ignored]
+    # Sort by ELO descending
     sorted_albums = sorted(active_albums, key=lambda x: x.eloScore, reverse=True)
-    return render_template('stats.html', albums=sorted_albums[:50]) # Top 50
+    
+    # Pass all albums to template for client-side rendering
+    return render_template('stats.html', albums=sorted_albums)
 
 if __name__ == '__main__':
     app.run(debug=True)
