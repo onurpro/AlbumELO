@@ -1,5 +1,5 @@
 # Vinylo
- 
+
 Vinylo (formerly AlbumELO) is a web-based application that allows you to rank your Last.fm albums using an ELO rating system. It fetches your top albums from Last.fm and presents them in 1v1 matchups, letting you decide which one you prefer. Over time, this builds a personalized ranking of your music library.
 
 ## Features
@@ -15,6 +15,7 @@ Vinylo (formerly AlbumELO) is a web-based application that allows you to rank yo
 ## Prerequisites
 
 -   Python 3.x
+-   Node.js & npm
 -   A Last.fm API Key (Get one [here](https://www.last.fm/api/account/create))
 
 ## Installation
@@ -25,40 +26,68 @@ Vinylo (formerly AlbumELO) is a web-based application that allows you to rank yo
     cd AlbumELO
     ```
 
-2.  Install dependencies:
+### Backend Setup
+
+1.  Navigate to the backend directory:
+    ```bash
+    cd backend
+    ```
+
+2.  Install Python dependencies:
     ```bash
     pip install -r requirements.txt
     ```
 
-3.  Create a `.env` file in the root directory and add your Last.fm API Key:
+3.  Create a `.env` file in the `backend` directory and add your Last.fm API Key:
     ```env
     API_KEY=your_lastfm_api_key_here
     ```
 
-## Usage
+### Frontend Setup
 
-1.  Run the application:
+1.  Navigate to the frontend directory:
     ```bash
-    python run.py
+    cd ../frontend
     ```
 
-2.  Open your web browser and navigate to:
-    `http://127.0.0.1:5000`
+2.  Install Node dependencies:
+    ```bash
+    npm install
+    ```
 
-3.  Start ranking!
+## Usage
+
+You need to run both the backend and frontend servers.
+
+1.  **Start the Backend**:
+    From the root directory:
+    ```bash
+    uvicorn backend.main:app --reload --port 8000
+    ```
+
+2.  **Start the Frontend**:
+    From the `frontend` directory:
+    ```bash
+    npm run dev
+    ```
+
+3.  Open your web browser and navigate to:
+    `http://localhost:5173`
+
+4.  Start ranking!
 
 ## Project Structure
 
--   `app/`: Contains the application source code.
-    -   `server.py`: Flask server and route definitions.
-    -   `models.py`: Data models for Albums.
+-   `backend/`: FastAPI backend source code.
+    -   `main.py`: FastAPI app and route definitions.
+    -   `models.py`: Data models.
     -   `api_client.py`: Last.fm API integration.
     -   `elo_ranker.py`: ELO calculation logic.
-    -   `storage.py`: JSON file persistence.
-    -   `templates/`: HTML templates.
-    -   `static/`: CSS and other static assets.
--   `run.py`: Entry point script.
--   `requirements.txt`: Python dependencies.
+    -   `database.py`: Database connection.
+-   `frontend/`: React frontend source code.
+    -   `src/`: React components and logic.
+    -   `public/`: Static assets.
+-   `requirements.txt`: Python dependencies (legacy root file removed, see `backend/requirements.txt`).
 
 ## License
 
