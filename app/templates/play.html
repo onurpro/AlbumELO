@@ -7,38 +7,63 @@
         <h2>Choose your favorite</h2>
     </div>
 
-    <div class="matchup" id="matchup-container" data-idx1="{{ idx1 }}" data-idx2="{{ idx2 }}">
-        <!-- Album 1 -->
-        <div class="album-card" onclick="vote('1')">
-            <div class="album-bg" style="background-image: url('{{ album1.imageURL }}')"></div>
-            <div class="album-content">
-                <img src="{{ album1.imageURL }}" alt="{{ album1.name }}" class="album-cover">
-                <div class="album-info">
-                    <h3 class="album-name">{{ album1.name }}</h3>
-                    <p class="artist-name">{{ album1.artistName }}</p>
-                    <span class="elo-badge">{{ album1.eloScore|int }}</span>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
+
+    <div class="game-area">
+        <div class="cards-container" id="capture-area">
+            <div class="matchup" id="matchup-container" data-idx1="{{ idx1 }}" data-idx2="{{ idx2 }}">
+                <!-- Album 1 -->
+                <div class="album-card" onclick="vote('1')">
+                    <div class="album-bg" style="background-image: url('{{ album1.imageURL }}')"></div>
+                    <div class="album-content">
+                        <img src="{{ album1.imageURL }}" alt="{{ album1.name }}" class="album-cover">
+                        <div class="album-info">
+                            <h3 class="album-name">{{ album1.name }}</h3>
+                            <p class="artist-name">{{ album1.artistName }}</p>
+                            <span class="elo-badge">{{ album1.eloScore|int }}</span>
+                        </div>
+                        <div class="ignore-btn" data-idx="{{ idx1 }}"
+                            onclick="event.stopPropagation(); ignoreAlbum(this.dataset.idx)">Ignore this album
+                        </div>
+                    </div>
                 </div>
-                <div class="ignore-btn" data-idx="{{ idx1 }}"
-                    onclick="event.stopPropagation(); ignoreAlbum(this.dataset.idx)">Ignore this album
+
+                <div class="vs-badge">VS</div>
+
+                <!-- Album 2 -->
+                <div class="album-card" onclick="vote('2')">
+                    <div class="album-bg" style="background-image: url('{{ album2.imageURL }}')"></div>
+                    <div class="album-content">
+                        <img src="{{ album2.imageURL }}" alt="{{ album2.name }}" class="album-cover">
+                        <div class="album-info">
+                            <h3 class="album-name">{{ album2.name }}</h3>
+                            <p class="artist-name">{{ album2.artistName }}</p>
+                            <span class="elo-badge">{{ album2.eloScore|int }}</span>
+                        </div>
+                        <div class="ignore-btn" data-idx="{{ idx2 }}"
+                            onclick="event.stopPropagation(); ignoreAlbum(this.dataset.idx)">Ignore this album
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="vs-badge">VS</div>
+        <div style="text-align: center; margin-top: 20px;">
+            <button class="btn btn-secondary" onclick="captureMatchup()">
+                Share Matchup 📸
+            </button>
+        </div>
+    </div>
 
-        <!-- Album 2 -->
-        <div class="album-card" onclick="vote('2')">
-            <div class="album-bg" style="background-image: url('{{ album2.imageURL }}')"></div>
-            <div class="album-content">
-                <img src="{{ album2.imageURL }}" alt="{{ album2.name }}" class="album-cover">
-                <div class="album-info">
-                    <h3 class="album-name">{{ album2.name }}</h3>
-                    <p class="artist-name">{{ album2.artistName }}</p>
-                    <span class="elo-badge">{{ album2.eloScore|int }}</span>
-                </div>
-                <div class="ignore-btn" data-idx="{{ idx2 }}"
-                    onclick="event.stopPropagation(); ignoreAlbum(this.dataset.idx)">Ignore this album
-                </div>
+    <!-- Share Modal -->
+    <div id="share-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <h3>Share Matchup</h3>
+            <div id="preview-container"></div>
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="downloadImage()">Download Image</button>
+                <button class="btn btn-secondary" onclick="copyImage()">Copy to Clipboard</button>
             </div>
         </div>
     </div>
@@ -94,5 +119,84 @@
                     }
                 });
         }
+
+        // Share Logic
+        let capturedImageBlob = null;
+
+        function captureMatchup() {
+            const element = document.getElementById('capture-area');
+
+            // Temporarily hide ignore buttons for cleaner screenshot
+            const ignoreBtns = document.querySelectorAll('.ignore-btn');
+            ignoreBtns.forEach(btn => btn.style.visibility = 'hidden');
+
+            domtoimage.toPng(element, {
+                bgcolor: '#0f0f13'
+            })
+                .then(function (dataUrl) {
+                    // Restore buttons
+                    ignoreBtns.forEach(btn => btn.style.visibility = 'visible');
+
+                    const previewContainer = document.getElementById('preview-container');
+                    previewContainer.innerHTML = '';
+
+                    // Show preview
+                    const img = document.createElement('img');
+                    img.src = dataUrl;
+                    img.style.maxWidth = '100%';
+                    img.style.borderRadius = '10px';
+                    previewContainer.appendChild(img);
+
+                    // Store blob for clipboard
+                    fetch(dataUrl)
+                        .then(res => res.blob())
+                        .then(blob => {
+                            capturedImageBlob = blob;
+                        });
+
+                    // Show modal
+                    document.getElementById('share-modal').classList.add('active');
+                })
+                .catch(function (error) {
+                    console.error('oops, something went wrong!', error);
+                    // Restore buttons in case of error
+                    ignoreBtns.forEach(btn => btn.style.visibility = 'visible');
+                    alert('Failed to generate image. Please try again.');
+                });
+        }
+
+        function closeModal() {
+            document.getElementById('share-modal').classList.remove('active');
+        }
+
+        function downloadImage() {
+            const link = document.createElement('a');
+            link.download = 'album-elo-matchup.png';
+            link.href = document.querySelector('#preview-container img').src;
+            link.click();
+        }
+
+        function copyImage() {
+            if (capturedImageBlob) {
+                try {
+                    const item = new ClipboardItem({ 'image/png': capturedImageBlob });
+                    navigator.clipboard.write([item]).then(() => {
+                        alert('Image copied to clipboard!');
+                    });
+                } catch (err) {
+                    console.error('Failed to copy: ', err);
+                    alert('Failed to copy image. Try downloading instead.');
+                }
+            }
+        }
+
+        // Close modal on outside click
+        window.onclick = function (event) {
+            const modal = document.getElementById('share-modal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
     </script>
-    {% endblock %}
+</div>
+{% endblock %}
