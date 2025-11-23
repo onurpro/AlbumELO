@@ -88,7 +88,7 @@ export default function Stats({ username, onBack }: StatsProps) {
 
             {/* List */}
             <div className="flex-1 overflow-y-auto pr-4 custom-scrollbar">
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-3 p-2">
                     {filteredAlbums.map((album, index) => (
                         <StatsRow key={album.id} album={album} rank={index + 1} />
                     ))}

@@ -209,4 +209,16 @@ __marimo__/
 # VSCode
 .vscode
 
-*.json
+# Node.js
+node_modules/
+dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Data files
+sql_app.db
+*_data.json
+
+# OS
+.DS_Store
