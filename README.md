@@ -6,7 +6,7 @@ Vinylo helps you discover your true music preferences by pitting your favorite a
 
 ## Features
 
--   **Connect Your Music**: Seamlessly integrates with your Last.fm or Spotify account to fetch your top albums.
+-   **Connect Your Music**: Seamlessly integrates with your Last.fm account to fetch your top albums.
 -   **1v1 Battles**: Simple "this or that" choices make ranking fun and easy.
 -   **Smart Ranking**: Uses an advanced ELO rating system (like in chess) to calculate scores based on your decisions.
 -   **Clean Up**: Automatically filters out singles and albums you rarely listen to, so you focus on what matters.
