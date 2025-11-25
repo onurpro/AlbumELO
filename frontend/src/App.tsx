@@ -33,7 +33,7 @@ function App() {
       }
     }
 
-    // Check for Spotify login redirect
+    // Check for login redirect (Spotify or Last.fm)
     const params = new URLSearchParams(window.location.search)
     const urlUsername = params.get('username')
     const urlSource = params.get('source')
@@ -72,7 +72,7 @@ function App() {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
             >
-              <Onboarding onLogin={handleLogin} />
+              <Onboarding />
             </motion.div>
           ) : (
             <>

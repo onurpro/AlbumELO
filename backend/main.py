@@ -122,6 +122,45 @@ def reset_user_data(username: str, source: str = "lastfm", db: Session = Depends
         "legacy_file_deleted": file_deleted
     }
 
+@app.get("/api/login/lastfm")
+def login_lastfm():
+    try:
+        url = api_client.get_lastfm_auth_url()
+        return {"url": url}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/callback/lastfm")
+def callback_lastfm(token: str, db: Session = Depends(get_db)):
+    try:
+        username = api_client.get_lastfm_session(token)
+        print(f"DEBUG: Authenticated Last.fm user: {username}")
+        
+        # Check if user already has data
+        count = db.query(models.Album).filter(
+            models.Album.username == username,
+            models.Album.source == "lastfm"
+        ).count()
+        
+        if count == 0:
+            # Fetch from Last.fm
+            print(f"Fetching from Last.fm for {username}...")
+            albums_data = api_client.fetch_albums_from_lastfm(username)
+            
+            if albums_data:
+                for album_dict in albums_data:
+                    db_album = models.Album(**album_dict)
+                    db.add(db_album)
+                db.commit()
+                print(f"DEBUG: Inserted {len(albums_data)} albums into DB")
+        
+        # Redirect to frontend
+        frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173")
+        return RedirectResponse(url=f"{frontend_url}?username={username}&source=lastfm")
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/api/login/spotify")
 def login_spotify():
     try:

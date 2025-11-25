@@ -1,42 +1,14 @@
 import { useState } from 'react'
 import axios from 'axios'
 import { motion } from 'framer-motion'
-import { User, ArrowRight, Loader2, AlertCircle, Music } from 'lucide-react'
+import { Loader2, AlertCircle, Music } from 'lucide-react'
 import { API_BASE_URL } from '../config'
 
-interface OnboardingProps {
-    onLogin: (username: string, source: string) => void
-}
-
-export default function Onboarding({ onLogin }: OnboardingProps) {
-    const [username, setUsername] = useState('')
+export default function Onboarding() {
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState('')
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
-        if (!username.trim()) return
 
-        setIsLoading(true)
-        setError('')
-
-        try {
-            // Call the init endpoint
-            await axios.post(`${API_BASE_URL}/api/init/${username}?source=lastfm`)
-
-            // If successful, notify parent
-            onLogin(username, 'lastfm')
-        } catch (err: any) {
-            console.error(err)
-            if (err.response && err.response.status === 404) {
-                setError('User not found on Last.fm or no albums available.')
-            } else {
-                setError('Failed to connect to the server. Please try again.')
-            }
-        } finally {
-            setIsLoading(false)
-        }
-    }
 
     const handleSpotifyLogin = async () => {
         try {
@@ -87,55 +59,39 @@ export default function Onboarding({ onLogin }: OnboardingProps) {
                             </div>
                         </div>
 
-                        {/* Right Side: Form */}
-                        <div className="flex-1 w-full max-w-xl">
-                            <form onSubmit={handleSubmit} className="space-y-6 bg-gray-50 p-8 rounded-2xl border-2 border-black shadow-[8px_8px_0px_rgba(0,0,0,1)]">
-                                <div className="space-y-2">
-                                    <label className="text-sm font-black text-black uppercase tracking-wider ml-1">Username</label>
-                                    <div className="relative group">
-                                        <input
-                                            type="text"
-                                            value={username}
-                                            onChange={(e) => setUsername(e.target.value)}
-                                            placeholder="Enter Last.fm username"
-                                            className="w-full bg-white border-2 border-black text-black text-xl rounded-xl px-6 py-5 pl-14 focus:outline-none focus:shadow-[4px_4px_0px_black] transition-all placeholder-gray-400 font-bold"
-                                            disabled={isLoading}
-                                        />
-                                        <User className="absolute left-5 top-6 text-black w-6 h-6" />
-                                    </div>
-                                </div>
+                        {/* Right Side: Buttons */}
+                        <div className="flex-1 w-full max-w-xl flex flex-col gap-6">
 
-                                {error && (
-                                    <motion.div
-                                        initial={{ opacity: 0, y: -10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        className="flex items-center gap-3 text-red-600 text-base bg-red-50 p-4 rounded-xl border-2 border-red-500 font-bold"
-                                    >
-                                        <AlertCircle size={20} />
-                                        {error}
-                                    </motion.div>
-                                )}
-
-                                <button
-                                    type="submit"
-                                    disabled={isLoading || !username.trim()}
-                                    className="w-full bg-yellow-400 text-black text-xl font-black rounded-xl py-5 px-6 flex items-center justify-center gap-3 border-2 border-black shadow-[4px_4px_0px_black] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_black] active:translate-x-0 active:translate-y-0 active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                            {error && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="flex items-center gap-3 text-red-600 text-base bg-red-50 p-4 rounded-xl border-2 border-red-500 font-bold"
                                 >
-                                    {isLoading ? (
-                                        <>
-                                            <Loader2 className="animate-spin" size={24} />
-                                            Syncing Library...
-                                        </>
-                                    ) : (
-                                        <>
-                                            Start Ranking
-                                            <ArrowRight size={24} />
-                                        </>
-                                    )}
-                                </button>
-                            </form>
+                                    <AlertCircle size={20} />
+                                    {error}
+                                </motion.div>
+                            )}
 
-                            <div className="mt-8 flex items-center gap-4">
+                            <button
+                                onClick={() => {
+                                    setIsLoading(true);
+                                    window.location.href = `${API_BASE_URL}/api/login/lastfm`;
+                                }}
+                                disabled={isLoading}
+                                className="w-full bg-[#b90000] text-white text-xl font-black rounded-xl py-5 px-6 flex items-center justify-center gap-3 border-2 border-black shadow-[4px_4px_0px_black] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_black] active:translate-x-0 active:translate-y-0 active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                            >
+                                {isLoading ? (
+                                    <Loader2 className="animate-spin" size={24} />
+                                ) : (
+                                    <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
+                                        <span className="text-[#b90000] font-bold text-xs">as</span>
+                                    </div>
+                                )}
+                                Login with Last.fm
+                            </button>
+
+                            <div className="flex items-center gap-4">
                                 <div className="h-[2px] flex-1 bg-gray-200" />
                                 <span className="text-gray-400 font-bold uppercase text-sm">Or</span>
                                 <div className="h-[2px] flex-1 bg-gray-200" />
@@ -144,7 +100,7 @@ export default function Onboarding({ onLogin }: OnboardingProps) {
                             <button
                                 onClick={handleSpotifyLogin}
                                 disabled={isLoading}
-                                className="mt-8 w-full bg-[#1DB954] text-white text-xl font-black rounded-xl py-5 px-6 flex items-center justify-center gap-3 border-2 border-black shadow-[4px_4px_0px_black] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_black] active:translate-x-0 active:translate-y-0 active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                className="w-full bg-[#1DB954] text-white text-xl font-black rounded-xl py-5 px-6 flex items-center justify-center gap-3 border-2 border-black shadow-[4px_4px_0px_black] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_black] active:translate-x-0 active:translate-y-0 active:shadow-none disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                             >
                                 <Music size={24} />
                                 Login with Spotify

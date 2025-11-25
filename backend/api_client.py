@@ -1,16 +1,20 @@
 import os
 import requests
+import hashlib
 from dotenv import load_dotenv
 from typing import List, Optional
 
 load_dotenv()
 
-API_KEY = os.getenv("API_KEY")
+LASTFM_API_KEY = os.getenv("LASTFM_API_KEY")
 LASTFM_BASE_URL = "http://ws.audioscrobbler.com/2.0"
+LASTFM_SHARED_SECRET = os.getenv("LASTFM_SHARED_SECRET")
+LASTFM_REDIRECT_URI = os.getenv("LASTFM_REDIRECT_URI")
 
 SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
 SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
 SPOTIFY_REDIRECT_URI = os.getenv("SPOTIFY_REDIRECT_URI")
+
 
 
 def get_data(username: str, page: int) -> Optional[dict]:
@@ -80,6 +84,64 @@ def fetch_albums_from_lastfm(username: str) -> List[dict]:
                 parse_page(p_data)
                 
     return albums_data
+
+def get_lastfm_auth_url() -> str:
+    """
+    Returns the URL to redirect the user to for Last.fm authorization.
+    """
+    if not API_KEY:
+        raise Exception("LASTFM_API_KEY (API_KEY) not set in environment variables.")
+    
+    # Last.fm doesn't strictly require a redirect_uri in the auth URL for web apps 
+    # if it's configured in the API account, but we can pass it as cb.
+    return (
+        f"http://www.last.fm/api/auth/"
+        f"?api_key={API_KEY}"
+        f"&cb={LASTFM_REDIRECT_URI}"
+    )
+
+def get_lastfm_session(token: str) -> str:
+    """
+    Exchanges the authentication token for a session key.
+    Returns the username associated with the session.
+    """
+    if not API_KEY or not LASTFM_SHARED_SECRET:
+        raise Exception("Last.fm credentials (API_KEY, SHARED_SECRET) not set.")
+
+    # Generate API signature
+    # Sort parameters alphabetically by name
+    params = {
+        'api_key': API_KEY,
+        'method': 'auth.getSession',
+        'token': token
+    }
+    
+    # Concatenate name+value (no '=' or '&')
+    sorted_params = sorted(params.items())
+    sig_str = "".join([f"{k}{v}" for k, v in sorted_params])
+    
+    # Append secret
+    sig_str += LASTFM_SHARED_SECRET
+    
+    # MD5 hash
+    api_sig = hashlib.md5(sig_str.encode('utf-8')).hexdigest()
+    
+    # Make request
+    params['api_sig'] = api_sig
+    params['format'] = 'json'
+    
+    response = requests.get(LASTFM_BASE_URL, params=params)
+    response.raise_for_status()
+    data = response.json()
+    
+    if 'session' not in data:
+        raise Exception("Failed to obtain Last.fm session")
+        
+    # We could store the session key if we needed to make write requests
+    # session_key = data['session']['key']
+    username = data['session']['name']
+    
+    return username
 
 def get_spotify_auth_url() -> str:
     """
