@@ -243,7 +243,12 @@ def get_matchup(username: str, source: str = "lastfm", db: Session = Depends(get
         models.UserSettings.username == username,
         models.UserSettings.source == source
     ).first()
-    threshold = settings.scrobble_threshold if settings else 0
+    
+    # Force threshold to 0 for Spotify since playcounts are 0
+    if source == "spotify":
+        threshold = 0
+    else:
+        threshold = settings.scrobble_threshold if settings else 0
     
     query = db.query(models.Album).filter(
         models.Album.username == username,
@@ -301,7 +306,12 @@ def get_stats(username: str, source: str = "lastfm", db: Session = Depends(get_d
         models.UserSettings.username == username,
         models.UserSettings.source == source
     ).first()
-    threshold = settings.scrobble_threshold if settings else 0
+    
+    # Force threshold to 0 for Spotify since playcounts are 0
+    if source == "spotify":
+        threshold = 0
+    else:
+        threshold = settings.scrobble_threshold if settings else 0
 
     albums = db.query(models.Album).filter(
         models.Album.username == username,

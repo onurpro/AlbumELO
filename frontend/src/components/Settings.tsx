@@ -112,36 +112,38 @@ export default function Settings({ username, source, onBack, onReset }: Settings
                             <h3 className="font-bold text-xl">Preferences</h3>
                         </div>
 
-                        <div className="space-y-2">
-                            <label className="block font-bold text-sm">
-                                Minimum Scrobble Threshold
-                            </label>
-                            <p className="text-xs text-gray-500 mb-2">
-                                Albums with fewer plays than this will be hidden from matchups and stats.
-                            </p>
-                            <div className="flex gap-4">
-                                <input
-                                    type="number"
-                                    min="0"
-                                    value={scrobbleThreshold}
-                                    onChange={(e) => setScrobbleThreshold(Math.max(0, parseInt(e.target.value) || 0))}
-                                    className="flex-1 p-3 border-2 border-black rounded-xl font-bold focus:outline-none focus:shadow-[4px_4px_0px_black] transition-shadow"
-                                />
-                                <button
-                                    onClick={handleSaveSettings}
-                                    disabled={savingSettings}
-                                    className="bg-black text-white px-6 rounded-xl font-bold hover:bg-gray-800 transition-colors flex items-center gap-2"
-                                >
-                                    <Save size={18} />
-                                    {savingSettings ? 'Saving...' : 'Save'}
-                                </button>
-                            </div>
-                            {settingsMessage && (
-                                <p className={`text-sm font-bold ${settingsMessage.includes('Failed') || settingsMessage.includes('Error') ? 'text-red-500' : 'text-green-500'}`}>
-                                    {settingsMessage}
+                        {source !== 'spotify' && (
+                            <div className="space-y-2">
+                                <label className="block font-bold text-sm">
+                                    Minimum Scrobble Threshold
+                                </label>
+                                <p className="text-xs text-gray-500 mb-2">
+                                    Albums with fewer plays than this will be hidden from matchups and stats.
                                 </p>
-                            )}
-                        </div>
+                                <div className="flex gap-4">
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        value={scrobbleThreshold}
+                                        onChange={(e) => setScrobbleThreshold(Math.max(0, parseInt(e.target.value) || 0))}
+                                        className="flex-1 p-3 border-2 border-black rounded-xl font-bold focus:outline-none focus:shadow-[4px_4px_0px_black] transition-shadow"
+                                    />
+                                    <button
+                                        onClick={handleSaveSettings}
+                                        disabled={savingSettings}
+                                        className="bg-black text-white px-6 rounded-xl font-bold hover:bg-gray-800 transition-colors flex items-center gap-2"
+                                    >
+                                        <Save size={18} />
+                                        {savingSettings ? 'Saving...' : 'Save'}
+                                    </button>
+                                </div>
+                                {settingsMessage && (
+                                    <p className={`text-sm font-bold ${settingsMessage.includes('Failed') || settingsMessage.includes('Error') ? 'text-red-500' : 'text-green-500'}`}>
+                                        {settingsMessage}
+                                    </p>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     <hr className="border-black" />
