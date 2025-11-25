@@ -37,8 +37,8 @@ Curious about your top 10?
 
 Found a bug? Have a great idea for a new feature? We'd love to hear from you!
 
--   **Report a Bug**: If something isn't working right, please [open an issue](https://github.com/yourusername/AlbumELO/issues) on GitHub.
--   **Request a Feature**: Have an idea to make Vinylo better? [Let us know!](https://github.com/yourusername/AlbumELO/issues)
+-   **Report a Bug**: If something isn't working right, please [open an issue](https://github.com/onurpro/vinylo/issues) on GitHub.
+-   **Request a Feature**: Have an idea to make Vinylo better? [Let us know!](https://github.com/onurpro/vinylo/issues)
 
 ---
 
