@@ -3,6 +3,7 @@ import axios from 'axios'
 import { motion } from 'framer-motion'
 import { Loader2, ArrowLeft, Trophy } from 'lucide-react'
 import type { Album } from '../types'
+import { API_BASE_URL } from '../config'
 
 interface StatsProps {
     username: string
@@ -18,7 +19,7 @@ export default function Stats({ username, onBack }: StatsProps) {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const res = await axios.get(`http://localhost:8000/api/stats/${username}`)
+                const res = await axios.get(`${API_BASE_URL}/api/stats/${username}`)
                 setAlbums(res.data)
             } catch (err) {
                 console.error("Failed to fetch stats", err)

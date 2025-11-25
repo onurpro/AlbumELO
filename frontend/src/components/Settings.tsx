@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Trash2, ArrowLeft, AlertTriangle } from 'lucide-react'
+import { API_BASE_URL } from '../config'
 
 interface SettingsProps {
     username: string
@@ -20,7 +21,7 @@ export default function Settings({ username, onBack, onReset }: SettingsProps) {
 
         setLoading(true)
         try {
-            const response = await fetch(`http://localhost:8000/api/reset/${username}`, {
+            const response = await fetch(`${API_BASE_URL}/api/reset/${username}`, {
                 method: 'DELETE',
             })
 

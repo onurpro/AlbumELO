@@ -2,6 +2,7 @@ import { useState } from 'react'
 import axios from 'axios'
 import { motion } from 'framer-motion'
 import { User, ArrowRight, Loader2, AlertCircle, Music } from 'lucide-react'
+import { API_BASE_URL } from '../config'
 
 interface OnboardingProps {
     onLogin: (username: string) => void
@@ -21,7 +22,7 @@ export default function Onboarding({ onLogin }: OnboardingProps) {
 
         try {
             // Call the init endpoint
-            await axios.post(`http://localhost:8000/api/init/${username}`)
+            await axios.post(`${API_BASE_URL}/api/init/${username}`)
 
             // If successful, notify parent
             onLogin(username)
@@ -40,7 +41,7 @@ export default function Onboarding({ onLogin }: OnboardingProps) {
     const handleSpotifyLogin = async () => {
         try {
             setIsLoading(true)
-            const res = await axios.get('http://localhost:8000/api/login/spotify')
+            const res = await axios.get(`${API_BASE_URL}/api/login/spotify`)
             window.location.href = res.data.url
         } catch (err) {
             console.error(err)

@@ -7,6 +7,7 @@ import type { Album } from '../types'
 
 import ShareModal from './ShareModal'
 import TutorialModal from './TutorialModal'
+import { API_BASE_URL } from '../config'
 
 interface GameProps {
     username: string
@@ -24,7 +25,7 @@ export default function Game({ username }: GameProps) {
     const fetchMatchup = async () => {
         try {
             setLoading(true)
-            const res = await axios.get(`http://localhost:8000/api/matchup/${username}`)
+            const res = await axios.get(`${API_BASE_URL}/api/matchup/${username}`)
             setMatchup(res.data)
         } catch (err) {
             console.error("Failed to fetch matchup", err)
@@ -55,7 +56,7 @@ export default function Game({ username }: GameProps) {
 
         try {
             await new Promise(resolve => setTimeout(resolve, 400)) // Animation delay
-            await axios.post('http://localhost:8000/api/vote', {
+            await axios.post(`${API_BASE_URL}/api/vote`, {
                 album1_id: album1.id,
                 album2_id: album2.id,
                 winner: winner
@@ -78,7 +79,7 @@ export default function Game({ username }: GameProps) {
     const confirmIgnore = async () => {
         if (!ignoreId) return
         try {
-            await axios.post(`http://localhost:8000/api/ignore/${ignoreId}`)
+            await axios.post(`${API_BASE_URL}/api/ignore/${ignoreId}`)
             setIgnoreId(null)
             fetchMatchup()
         } catch (err) {

@@ -3,6 +3,7 @@ import axios from 'axios'
 import { motion } from 'framer-motion'
 import { Loader2, ArrowLeft, RefreshCcw, Ban } from 'lucide-react'
 import type { Album } from '../types'
+import { API_BASE_URL } from '../config'
 
 interface IgnoredAlbumsProps {
     username: string
@@ -15,7 +16,7 @@ export default function IgnoredAlbums({ username, onBack }: IgnoredAlbumsProps) 
 
     const fetchIgnored = async () => {
         try {
-            const res = await axios.get(`http://localhost:8000/api/ignored/${username}`)
+            const res = await axios.get(`${API_BASE_URL}/api/ignored/${username}`)
             setAlbums(res.data)
         } catch (err) {
             console.error("Failed to fetch ignored albums", err)
@@ -30,7 +31,7 @@ export default function IgnoredAlbums({ username, onBack }: IgnoredAlbumsProps) 
 
     const handleRestore = async (albumId: number) => {
         try {
-            await axios.post(`http://localhost:8000/api/unignore/${albumId}`)
+            await axios.post(`${API_BASE_URL}/api/unignore/${albumId}`)
             setAlbums(prev => prev.filter(a => a.id !== albumId))
         } catch (err) {
             console.error("Failed to restore album", err)
