@@ -41,7 +41,7 @@ Vinylo is a web-based application that allows you to rank your Last.fm albums us
 
 3.  Create a `.env` file in the **root** directory (not backend) and add your keys:
     ```env
-    API_KEY=your_lastfm_api_key_here
+    LASTFM_API_KEY=your_lastfm_api_key_here
     
     SPOTIFY_CLIENT_ID=your_spotify_client_id
     SPOTIFY_CLIENT_SECRET=your_spotify_client_secret
