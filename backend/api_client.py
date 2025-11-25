@@ -21,7 +21,7 @@ def get_data(username: str, page: int) -> Optional[dict]:
     params = {
         'method': 'user.gettopalbums',
         'user': username,
-        'api_key': API_KEY,
+        'api_key': LASTFM_API_KEY,
         'format': 'json',
         'limit': 1000, # Max limit
         'page': page
@@ -39,8 +39,8 @@ def fetch_albums_from_lastfm(username: str) -> List[dict]:
     Fetches all top albums for a user from Last.fm and returns a list of dicts
     ready to be inserted into the database.
     """
-    if not API_KEY:
-        print("Error: API_KEY not found in environment variables.")
+    if not LASTFM_API_KEY:
+        print("Error: LASTFM_API_KEY not found in environment variables.")
         return []
 
     albums_data = []
@@ -89,14 +89,14 @@ def get_lastfm_auth_url() -> str:
     """
     Returns the URL to redirect the user to for Last.fm authorization.
     """
-    if not API_KEY:
-        raise Exception("LASTFM_API_KEY (API_KEY) not set in environment variables.")
+    if not LASTFM_API_KEY:
+        raise Exception("LASTFM_API_KEY (LASTFM_API_KEY) not set in environment variables.")
     
     # Last.fm doesn't strictly require a redirect_uri in the auth URL for web apps 
     # if it's configured in the API account, but we can pass it as cb.
     return (
         f"http://www.last.fm/api/auth/"
-        f"?api_key={API_KEY}"
+        f"?api_key={LASTFM_API_KEY}"
         f"&cb={LASTFM_REDIRECT_URI}"
     )
 
@@ -105,13 +105,13 @@ def get_lastfm_session(token: str) -> str:
     Exchanges the authentication token for a session key.
     Returns the username associated with the session.
     """
-    if not API_KEY or not LASTFM_SHARED_SECRET:
-        raise Exception("Last.fm credentials (API_KEY, SHARED_SECRET) not set.")
+    if not LASTFM_API_KEY or not LASTFM_SHARED_SECRET:
+        raise Exception("Last.fm credentials (LASTFM_API_KEY, SHARED_SECRET) not set.")
 
     # Generate API signature
     # Sort parameters alphabetically by name
     params = {
-        'api_key': API_KEY,
+        'api_key': LASTFM_API_KEY,
         'method': 'auth.getSession',
         'token': token
     }
