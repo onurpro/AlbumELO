@@ -8,6 +8,7 @@ import type { Album } from '../types'
 import ShareModal from './ShareModal'
 import TutorialModal from './TutorialModal'
 import { API_BASE_URL } from '../config'
+import logo from '../assets/logo.svg'
 
 interface GameProps {
     username: string
@@ -22,6 +23,7 @@ export default function Game({ username, source }: GameProps) {
     const [showTutorial, setShowTutorial] = useState(false)
     const [capturedImage, setCapturedImage] = useState<string | null>(null)
     const captureRef = useRef<HTMLDivElement>(null)
+    const shareRef = useRef<HTMLDivElement>(null)
 
     const fetchMatchup = async () => {
         try {
@@ -56,12 +58,21 @@ export default function Game({ username, source }: GameProps) {
         const album2 = matchup[1]
 
         try {
-            await new Promise(resolve => setTimeout(resolve, 400)) // Animation delay
-            await axios.post(`${API_BASE_URL}/api/vote`, {
+            const res = await axios.post(`${API_BASE_URL}/api/vote`, {
                 album1_id: album1.id,
                 album2_id: album2.id,
                 winner: winner
             })
+
+            // Update local state with new scores to trigger animation
+            const { new_scores } = res.data
+            setMatchup(prev => prev.map((a, i) => {
+                if (i === 0) return { ...a, elo_score: new_scores.album1 }
+                if (i === 1) return { ...a, elo_score: new_scores.album2 }
+                return a
+            }))
+
+            await new Promise(resolve => setTimeout(resolve, 2000)) // Wait for rolling animation
             await fetchMatchup()
         } catch (err) {
             console.error("Vote failed", err)
@@ -89,11 +100,9 @@ export default function Game({ username, source }: GameProps) {
     }
 
     const handleShare = async () => {
-        if (captureRef.current) {
+        if (shareRef.current) {
             try {
-                // Create a temporary clone to add branding if needed later
-                // For now, just capture the current ref
-                const dataUrl = await toPng(captureRef.current, { cacheBust: true, pixelRatio: 2, backgroundColor: '#ffffff' })
+                const dataUrl = await toPng(shareRef.current, { cacheBust: true, pixelRatio: 2, backgroundColor: '#ffffff' })
                 setCapturedImage(dataUrl)
                 setShowShareModal(true)
             } catch (err) {
@@ -221,6 +230,61 @@ export default function Game({ username, source }: GameProps) {
                 </div>
             )}
 
+            {/* Hidden Share Layout */}
+            <div style={{ position: 'absolute', left: '-9999px', top: 0 }}>
+                <div ref={shareRef} className="flex flex-col items-center bg-white p-12 rounded-3xl" style={{ width: '900px' }}>
+
+                    {/* Top Banner */}
+                    <div className="flex items-center gap-6 mb-12">
+                        <img src={logo} alt="Vinylo Logo" className="w-20 h-20" />
+                        <h1 className="text-6xl font-black text-black tracking-tighter uppercase">
+                            Vinylo
+                        </h1>
+                    </div>
+
+                    {/* Matchup Content */}
+                    <div className="flex flex-row items-center justify-center gap-16 p-8 rounded-3xl bg-transparent relative w-full">
+                        {/* VS Badge */}
+                        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
+                            <div className="bg-white text-black font-black text-3xl w-20 h-20 rounded-full flex items-center justify-center shadow-2xl border-4 border-gray-900">
+                                VS
+                            </div>
+                        </div>
+
+                        {matchup.map((album) => (
+                            <div key={`share-${album.id}`} className="w-[340px] h-[500px] flex-shrink-0">
+                                <div className="w-full h-full bg-white border-2 border-black rounded-[20px] shadow-[8px_8px_0px_rgba(0,0,0,0.1)] flex flex-col items-center p-[30px] text-center relative">
+                                    <div className="w-[250px] h-[250px] mb-[25px] relative shrink-0">
+                                        <img
+                                            src={album.image_url || 'placeholder'}
+                                            alt={album.name}
+                                            className="w-full h-full object-cover rounded-[10px] shadow-2xl"
+                                        />
+                                    </div>
+                                    <div className="flex flex-col items-center w-full">
+                                        <h3 className="text-2xl font-bold text-black mb-2 leading-tight line-clamp-2 w-full">
+                                            {album.name}
+                                        </h3>
+                                        <p className="text-[#666] font-medium mb-6 line-clamp-1 w-full text-lg">
+                                            {album.artist_name}
+                                        </p>
+                                        <div className="flex items-center gap-2 bg-yellow-500 text-black px-6 py-2 rounded-[15px] border-2 border-black font-bold text-lg mt-auto">
+                                            <TrendingUp size={20} />
+                                            <span className="font-mono">{Math.round(album.elo_score)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Bottom Banner */}
+                    <div className="mt-12 bg-black text-white px-10 py-3 rounded-full font-bold text-2xl tracking-widest uppercase">
+                        vinylo.onuryildiz.me
+                    </div>
+                </div>
+            </div>
+
         </div>
     )
 }
@@ -275,10 +339,41 @@ function AlbumCard({ album, index, onVote, onIgnore, disabled }: { album: Album,
 
                     <div className="flex items-center gap-2 bg-yellow-500 text-black px-4 py-1 rounded-[15px] border-2 border-black font-bold text-sm mt-auto">
                         <TrendingUp size={14} />
-                        <span className="font-mono">{Math.round(album.elo_score)}</span>
+                        <RollingNumber value={album.elo_score} />
                     </div>
                 </div>
             </div>
         </motion.div>
+    )
+}
+
+function RollingNumber({ value }: { value: number }) {
+    const rounded = Math.round(value)
+    const digits = rounded.toString().split('').map(Number)
+
+    return (
+        <div className="flex items-center justify-center overflow-hidden h-5 font-mono text-sm leading-none">
+            {digits.map((digit, i) => (
+                <Digit key={i} digit={digit} />
+            ))}
+        </div>
+    )
+}
+
+function Digit({ digit }: { digit: number }) {
+    return (
+        <div className="relative w-[0.6em] h-5 overflow-hidden">
+            <motion.div
+                animate={{ y: -digit * 10 + '%' }} // Move by 10% per digit (10 digits total)
+                transition={{ type: "spring", stiffness: 60, damping: 15, mass: 1 }}
+                className="absolute top-0 left-0 flex flex-col items-center w-full h-[1000%]" // 1000% height for 10 digits
+            >
+                {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
+                    <span key={n} className="h-[10%] flex items-center justify-center w-full">
+                        {n}
+                    </span>
+                ))}
+            </motion.div>
+        </div>
     )
 }
